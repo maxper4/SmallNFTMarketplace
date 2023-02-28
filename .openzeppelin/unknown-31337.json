@@ -2,7 +2,7 @@
   "manifestVersion": "3.2",
   "admin": {
     "address": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
-    "txHash": "0x9c6364eeee39234bafbc86f3914b686bdd8075bc6e98f61bf0fbe55536adf912"
+    "txHash": "0x5249a1fc527739113bffdf50866a0bc686b1c9fbe2002291fd217e80b6e23590"
   },
   "proxies": [
     {
@@ -26,40 +26,40 @@
       "kind": "transparent"
     },
     {
-      "address": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
-      "txHash": "0x7afacedecd2aea6911b252e159458633155f4bfe998f77e7df42dffa69c50ae4",
-      "kind": "transparent"
-    },
-    {
       "address": "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
-      "txHash": "0x20e3bb3ccc5d72c665472391434adc5d3416f5530f7ea72b17bb3055a3b122fd",
+      "txHash": "0x36f8e095ef1289d0f1801baea4d5622b5c029e0410d2e62e906c9ea3486c852e",
       "kind": "transparent"
     },
     {
       "address": "0x610178dA211FEF7D417bC0e6FeD39F05609AD788",
-      "txHash": "0xc2986ee161b45823ad71ea004669d577aeaeede7d71856b3bf355584573df5eb",
+      "txHash": "0x8ca035275c948813998e4f8355900528925a9ffbf628f32bcf20cb40cb087ab9",
       "kind": "transparent"
     },
     {
       "address": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
-      "txHash": "0xcab4fb5e547d257c3a70065b0894e30dfa41f96c60927eeabb7888a8bd1b4585",
+      "txHash": "0x98fb8ed6576162f1b25e80305b4eb616808cc6da5da2b10468ab269bb3633056",
       "kind": "transparent"
     },
     {
       "address": "0x68B1D87F95878fE05B998F19b66F4baba5De1aed",
-      "txHash": "0xe9bd310eb2f0f3c3ac57551381257ad5395f14e3d4cc3f1c80a970937232195e",
+      "txHash": "0x9754b054acf014a9c3e23c19acb6146f2d199c0d1ec29d019cd6632feffcaf13",
       "kind": "transparent"
     },
     {
       "address": "0xc6e7DF5E7b4f2A278906862b61205850344D4e7d",
-      "txHash": "0xaa5cb5994b61bc8d4f7be12aeac9b7d6f4d7d23b664a7a0fb8e8e44bb3b64485",
+      "txHash": "0xf52367ab5fee664b5e06cdf63f59bacc8080062ffa8e0c802b76af64c6d7808c",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+      "txHash": "0x25ff3664fe4d05e88865100b575f7bca08694d56398ea5145f5a77dd5266f79e",
       "kind": "transparent"
     }
   ],
   "impls": {
-    "6dce7ef3cc47c6471aa97eb6c31b33a082012ebffabeffdcf2683520673e98b5": {
+    "7c5da39a0cb06292802846ca7116af0a4f2ad51b98aa28c484f2625802b9fadc": {
       "address": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
-      "txHash": "0xab6c84c59d1fdde1ddcc38b7c20d16f833679fd1a7751b7030abc4f9f0d5cf2e",
+      "txHash": "0xa6f84fa91cc6878a424926021abb414a9e76a11fcdd8ba03dbb87d6a0b648590",
       "layout": {
         "solcVersion": "0.8.17",
         "storage": [
@@ -121,76 +121,44 @@
             "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:116"
           },
           {
-            "label": "_status",
+            "label": "royaltiesPercent",
             "offset": 0,
             "slot": "151",
             "type": "t_uint256",
-            "contract": "ReentrancyGuardUpgradeable",
-            "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:38"
-          },
-          {
-            "label": "__gap",
-            "offset": 0,
-            "slot": "152",
-            "type": "t_array(t_uint256)49_storage",
-            "contract": "ReentrancyGuardUpgradeable",
-            "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:80"
-          },
-          {
-            "label": "royaltiesPercent",
-            "offset": 0,
-            "slot": "201",
-            "type": "t_uint256",
-            "contract": "RaulixShop",
-            "src": "contracts/RaulixShop.sol:19"
+            "contract": "Shop",
+            "src": "contracts/Shop.sol:30"
           },
           {
             "label": "royaltiesAddress",
             "offset": 0,
-            "slot": "202",
+            "slot": "152",
             "type": "t_address_payable",
-            "contract": "RaulixShop",
-            "src": "contracts/RaulixShop.sol:20"
+            "contract": "Shop",
+            "src": "contracts/Shop.sol:31"
           },
           {
             "label": "allowedNFTs",
             "offset": 0,
-            "slot": "203",
+            "slot": "153",
             "type": "t_mapping(t_address,t_bool)",
-            "contract": "RaulixShop",
-            "src": "contracts/RaulixShop.sol:24"
+            "contract": "Shop",
+            "src": "contracts/Shop.sol:35"
           },
           {
             "label": "listed",
             "offset": 0,
-            "slot": "204",
+            "slot": "154",
             "type": "t_mapping(t_address,t_mapping(t_uint256,t_bool))",
-            "contract": "RaulixShop",
-            "src": "contracts/RaulixShop.sol:25"
-          },
-          {
-            "label": "offersIndexes",
-            "offset": 0,
-            "slot": "205",
-            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
-            "contract": "RaulixShop",
-            "src": "contracts/RaulixShop.sol:26"
+            "contract": "Shop",
+            "src": "contracts/Shop.sol:36"
           },
           {
             "label": "offers",
             "offset": 0,
-            "slot": "206",
-            "type": "t_mapping(t_uint256,t_struct(Offer)1129_storage)",
-            "contract": "RaulixShop",
-            "src": "contracts/RaulixShop.sol:27"
-          },
-          {
-            "label": "offersCounter",
-            "offset": 0,
-            "slot": "207",
-            "type": "t_struct(Counter)832_storage",
-            "contract": "RaulixShop",
-            "src": "contracts/RaulixShop.sol:28"
+            "slot": "155",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_struct(Offer)1156_storage))",
+            "contract": "Shop",
+            "src": "contracts/Shop.sol:37"
           }
         ],
         "types": {
@@ -222,36 +190,20 @@
             "label": "mapping(address => mapping(uint256 => bool))",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_address,t_mapping(t_uint256,t_uint256))": {
-            "label": "mapping(address => mapping(uint256 => uint256))",
+          "t_mapping(t_address,t_mapping(t_uint256,t_struct(Offer)1156_storage))": {
+            "label": "mapping(address => mapping(uint256 => struct Shop.Offer))",
             "numberOfBytes": "32"
           },
           "t_mapping(t_uint256,t_bool)": {
             "label": "mapping(uint256 => bool)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_uint256,t_struct(Offer)1129_storage)": {
-            "label": "mapping(uint256 => struct RaulixShop.Offer)",
+          "t_mapping(t_uint256,t_struct(Offer)1156_storage)": {
+            "label": "mapping(uint256 => struct Shop.Offer)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_uint256,t_uint256)": {
-            "label": "mapping(uint256 => uint256)",
-            "numberOfBytes": "32"
-          },
-          "t_struct(Counter)832_storage": {
-            "label": "struct CountersUpgradeable.Counter",
-            "members": [
-              {
-                "label": "_value",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "0"
-              }
-            ],
-            "numberOfBytes": "32"
-          },
-          "t_struct(Offer)1129_storage": {
-            "label": "struct RaulixShop.Offer",
+          "t_struct(Offer)1156_storage": {
+            "label": "struct Shop.Offer",
             "members": [
               {
                 "label": "owner",

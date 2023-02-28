@@ -1,21 +1,12 @@
 const { expect } = require("chai");
-const { ethers, upgrades } = require("hardhat");
+const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
+const { setupFixture } = require("./fixture.js");
 
 describe("Buying/Selling a listed NFT", function () {
   it("Should receive the bought NFT", async function () {
-    const [owner, royaltiesAccount, buyer] = await ethers.getSigners();
+    const { owner, royaltiesAccount, seller, buyer, nft, shop } = await loadFixture(setupFixture);
 
-    const NFTFactory = await ethers.getContractFactory("RaulixNFTs");
-    const ShopFactory = await ethers.getContractFactory("RaulixShop");
-    const nft = await NFTFactory.deploy();
-    await nft.deployed();
-    const shop = await upgrades.deployProxy(ShopFactory, [200, royaltiesAccount.address, [nft.address]]);
-    await shop.deployed();
-
-    await nft.mint(1);
-    
-    await nft.setApprovalForAll(shop.address, true);
-    await shop.sell(nft.address, 0, 100);
+    await shop.connect(seller).sell(nft.address, 0, 100);
     await shop.connect(buyer).buy(nft.address, 0, {value: 100});
 
     const owner1 = await nft.ownerOf(0);
@@ -23,18 +14,8 @@ describe("Buying/Selling a listed NFT", function () {
   });
 
   it("Should transfer money", async function () {
-    const [owner, royaltiesAccount, seller, buyer] = await ethers.getSigners();
+    const { owner, royaltiesAccount, seller, buyer, nft, shop } = await loadFixture(setupFixture);
 
-    const NFTFactory = await ethers.getContractFactory("RaulixNFTs");
-    const ShopFactory = await ethers.getContractFactory("RaulixShop");
-    const nft = await NFTFactory.deploy();
-    await nft.deployed();
-    const shop = await upgrades.deployProxy(ShopFactory, [200, royaltiesAccount.address, [nft.address]]);
-    await shop.deployed();
-
-    await nft.connect(seller).mint(1);
-    
-    await nft.connect(seller).setApprovalForAll(shop.address, true);
     await shop.connect(seller).sell(nft.address, 0, 100);
 
     const balanceBeforeSeller = await ethers.provider.getBalance(seller.address);
@@ -47,18 +28,8 @@ describe("Buying/Selling a listed NFT", function () {
   });
 
   it("Should transfer royalties", async function () {
-    const [owner, royaltiesAccount, seller, buyer] = await ethers.getSigners();
+    const { owner, royaltiesAccount, seller, buyer, nft, shop } = await loadFixture(setupFixture);
 
-    const NFTFactory = await ethers.getContractFactory("RaulixNFTs");
-    const ShopFactory = await ethers.getContractFactory("RaulixShop");
-    const nft = await NFTFactory.deploy();
-    await nft.deployed();
-    const shop = await upgrades.deployProxy(ShopFactory, [200, royaltiesAccount.address, [nft.address]]);
-    await shop.deployed();
-
-    await nft.connect(seller).mint(1);
-    
-    await nft.connect(seller).setApprovalForAll(shop.address, true);
     await shop.connect(seller).sell(nft.address, 0, 100);
 
     const balanceBefore = await ethers.provider.getBalance(royaltiesAccount.address);
@@ -71,53 +42,29 @@ describe("Buying/Selling a listed NFT", function () {
   });
 
   it("Should not allow to buy with less money than listed", async function () {
-    const [owner] = await ethers.getSigners();
+    const { owner, royaltiesAccount, seller, buyer, nft, shop } = await loadFixture(setupFixture);
 
-    const NFTFactory = await ethers.getContractFactory("RaulixNFTs");
-    const ShopFactory = await ethers.getContractFactory("RaulixShop");
-    const nft = await NFTFactory.deploy();
-    await nft.deployed();
-    const shop = await upgrades.deployProxy(ShopFactory, [200, owner.address, [nft.address]]);
-    await shop.deployed();
-
-    await nft.mint(1);
-    
-    await nft.setApprovalForAll(shop.address, true);
-    await shop.sell(nft.address, 0, 1000);
+    await shop.connect(seller).sell(nft.address, 0, 1000);
 
     await expect(
       shop.buy(nft.address, 0, {value: 500})
-    ).to.be.revertedWith("Raulix: not enough funds");
+    ).to.be.revertedWith("InsufficientBalance()");
   });
 
   it("Should not allow to buy unlisted NFT", async function () {
-    const [owner, royaltiesAccount, seller, buyer] = await ethers.getSigners();
-
-    const NFTFactory = await ethers.getContractFactory("RaulixNFTs");
-    const ShopFactory = await ethers.getContractFactory("RaulixShop");
-    const nft = await NFTFactory.deploy();
-    await nft.deployed();
-    const shop = await upgrades.deployProxy(ShopFactory, [200, royaltiesAccount.address, [nft.address]]);
-    await shop.deployed();
+    const { owner, royaltiesAccount, seller, buyer, nft, shop } = await loadFixture(setupFixture);
 
     await expect(
       shop.connect(buyer).buy(nft.address, 0, {value: 100})
-    ).to.be.revertedWith("Raulix: NFT not listed");
+    ).to.be.revertedWith('requireListed("'+nft.address+'", 0)');
   });
 
   it("Should not allow to list from other collections", async function () {
-    const [owner] = await ethers.getSigners();
-
-    const NFTFactory = await ethers.getContractFactory("RaulixNFTs");
-    const ShopFactory = await ethers.getContractFactory("RaulixShop");
-    const nft = await NFTFactory.deploy();
-    await nft.deployed();
-    const shop = await upgrades.deployProxy(ShopFactory, [200, owner.address, [nft.address]]);
-    await shop.deployed();
+    const { owner, royaltiesAccount, seller, buyer, nft, shop } = await loadFixture(setupFixture);
 
     await expect(
       shop.sell(owner.address, 0, 100)
-    ).to.be.revertedWith("Raulix: NFT not allowed");
+    ).to.be.revertedWith('requireAllowedNFTs("'+owner.address+'")');
   });
 
 

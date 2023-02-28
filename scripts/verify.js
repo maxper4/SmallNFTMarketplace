@@ -2,7 +2,7 @@ const main = async () => {
 
     await hre.run("verify:verify", {
         address: "0x0000000000000000000000000000000000000000000000",
-        constructorArguments: [200, "0x0000000000000000000000", ["0x0000000000000000000000"]]
+        constructorArguments: [500, "0x0000000000000000000000", ["0x0000000000000000000000"]]
     })
 }
 

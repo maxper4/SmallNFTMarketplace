@@ -1,4 +1,5 @@
-# Raulix Hardhat Project
+# Marketplace Hardhat Project
+Small Marketplace in solidity using hardhat. Allow users to list items for sale and buy them.
 
 Unit Tests available: 
 ```shell

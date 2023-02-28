@@ -1,24 +1,6 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.17;
 
-
-//***********************************************************************************************************//
-//       _______                       __  __                   ______   __                                  //
-//      |       \                     |  \|  \                 /      \ |  \                                 //
-//      | $$$$$$$\  ______   __    __ | $$ \$$ __    __       |  $$$$$$\| $$____    ______    ______         //
-//      | $$__| $$ |      \ |  \  |  \| $$|  \|  \  /  \      | $$___\$$| $$    \  /      \  /      \        //
-//      | $$    $$  \$$$$$$\| $$  | $$| $$| $$ \$$\/  $$       \$$    \ | $$$$$$$\|  $$$$$$\|  $$$$$$\       //
-//      | $$$$$$$\ /      $$| $$  | $$| $$| $$  >$$  $$        _\$$$$$$\| $$  | $$| $$  | $$| $$  | $$       //
-//      | $$  | $$|  $$$$$$$| $$__/ $$| $$| $$ /  $$$$\       |  \__| $$| $$  | $$| $$__/ $$| $$__/ $$       //
-//      | $$  | $$ \$$    $$ \$$    $$| $$| $$|  $$ \$$\       \$$    $$| $$  | $$ \$$    $$| $$    $$       //
-//       \$$   \$$  \$$$$$$$  \$$$$$$  \$$ \$$ \$$   \$$        \$$$$$$  \$$   \$$  \$$$$$$ | $$$$$$$        //
-//                                                                                            | $$           //
-//                                                                                            | $$           //
-//                                                                                             \$$           //
-//                                                                                                           //                                                  
-//***********************************************************************************************************//
-
-
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
@@ -26,47 +8,66 @@ import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+error requireAllowedNFTs(address _nft);
+error requireListed(address _nft, uint256 _tokenId);
+error requireUnListed(address _nft, uint256 _tokenId);
+error requireOwnerOfNFT(address _nft, uint256 _tokenId);
+error requireApproved(address _nft, uint256 _tokenId);
+error requirePriceGreaterThanZero();
+error InsufficientBalance();
+
 /**
- * @title Raulix Shop marketplace contract
+ * @title Little test marketplace contract
  * @dev Use proxy pattern to upgrade the contract
  * @author maxper
  */
-contract RaulixShop is OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable {
-    using CountersUpgradeable for CountersUpgradeable.Counter;
-
+contract Shop is OwnableUpgradeable, PausableUpgradeable {
     struct Offer {
         address payable owner;
         uint256 price;
     }
 
-    uint256 public royaltiesPercent;                                            // should use 2 decimals, e.g. 2% = 200
+    uint256 public royaltiesPercent;                                            // should use 2 decimals, e.g. 5% = 500
     address payable public royaltiesAddress;                                    // address to receive royalties at each sale
 
     uint16 public constant royaltiesDivisor = 10**2 * 100;                      // power 2 for 2 decimals, 100 for percentage
 
     mapping(address => bool) public allowedNFTs;                                // allowed NFTs to be sold in this shop
     mapping(address => mapping(uint256 => bool)) public listed;                 // listed NFTs
-    mapping(address => mapping(uint256 => uint256)) public offersIndexes;       // offers index for each NFT
-    mapping(uint256 => Offer) offers;                                           // offers for each NFT
-    CountersUpgradeable.Counter private offersCounter;                          // offers counter
+    mapping(address => mapping(uint256 => Offer)) public offers;                // offers index for each NFT
 
     modifier onlyAllowedNFTs(address _nft){
-        require(allowedNFTs[_nft], "Raulix: NFT not allowed");
+        if(!allowedNFTs[_nft]) {
+            revert requireAllowedNFTs(_nft);
+        }
         _;
     }
 
     modifier onlyListed(address _nft, uint256 _tokenId){
-        require(listed[_nft][_tokenId], "Raulix: NFT not listed");
+        if(!listed[_nft][_tokenId]) {
+            revert requireListed(_nft, _tokenId);
+        }
         _;
     }
 
     modifier onlyUnListed(address _nft, uint256 _tokenId){
-        require(!listed[_nft][_tokenId], "Raulix: NFT already listed");
+        if(listed[_nft][_tokenId]) {
+            revert requireUnListed(_nft, _tokenId);
+        }
         _;
     }
 
-    modifier onlyOwnerOfListing(address _nft, uint256 _tokenId){
-        require(IERC721(_nft).ownerOf(_tokenId) == msg.sender, "Raulix: not owner of NFT");
+    modifier onlyOwnerOfNFT(address _nft, uint256 _tokenId){
+        if(IERC721(_nft).ownerOf(_tokenId) != msg.sender) {
+            revert requireOwnerOfNFT(_nft, _tokenId);
+        }
+        _;
+    }
+
+    modifier onlyApproved(address _nft, uint256 _tokenId){
+        if(!IERC721(_nft).isApprovedForAll(_msgSender(), address(this)) && IERC721(_nft).getApproved(_tokenId) != address(this)) {
+            revert requireApproved(_nft, _tokenId);
+        }
         _;
     }
 
@@ -80,7 +81,6 @@ contract RaulixShop is OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardU
     function initialize(uint256 _royaltiesPercent, address _royaltiesAddress, address[] calldata _nftAddresses) public initializer {
         __Ownable_init();
         __Pausable_init();
-        __ReentrancyGuard_init();
 
         royaltiesPercent = _royaltiesPercent;
         royaltiesAddress = payable(_royaltiesAddress);
@@ -91,22 +91,19 @@ contract RaulixShop is OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardU
     }
 
     /**
-     * @notice Cancelling a listed NFT
+     * @notice put an NFT for sale
      * @param _nft NFT address 
      * @param _tokenId NFT token id
      * @dev The NFT is transferred back to the owner
      */
-    function sell(address _nft, uint256 _tokenId, uint256 _price) external onlyAllowedNFTs(_nft) onlyUnListed(_nft, _tokenId) onlyOwnerOfListing(_nft, _tokenId)
-     whenNotPaused nonReentrant {
-        require(_price > 0, "Raulix: price must be greater than 0");
+    function sell(address _nft, uint256 _tokenId, uint256 _price) external onlyAllowedNFTs(_nft) onlyUnListed(_nft, _tokenId) 
+        onlyOwnerOfNFT(_nft, _tokenId) onlyApproved(_nft, _tokenId) whenNotPaused {
+        if(_price == 0) {
+            revert requirePriceGreaterThanZero();
+        }
 
-        offersIndexes[_nft][_tokenId] = offersCounter.current();
-        offers[offersCounter.current()] = Offer(payable(msg.sender), _price);
-        offersCounter.increment();
-
+        offers[_nft][_tokenId] = Offer(payable(msg.sender), _price);
         listed[_nft][_tokenId] = true;
-
-        IERC721(_nft).transferFrom(msg.sender, address(this), _tokenId);
     }
 
     /**
@@ -115,11 +112,13 @@ contract RaulixShop is OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardU
      * @param _tokenId NFT token id
      * @param _price new price
      */
-    function editPrice(address _nft, uint256 _tokenId, uint256 _price) external onlyAllowedNFTs(_nft) onlyListed(_nft, _tokenId) onlyOwnerOfListing(_nft, _tokenId)
-    whenNotPaused nonReentrant {
-        require(_price > 0, "Raulix: price must be greater than 0");
+    function editPrice(address _nft, uint256 _tokenId, uint256 _price) external onlyListed(_nft, _tokenId) onlyOwnerOfNFT(_nft, _tokenId)
+    whenNotPaused {
+        if(_price == 0) {
+            revert requirePriceGreaterThanZero();
+        }
 
-        offers[offersIndexes[_nft][_tokenId]].price = _price;
+        offers[_nft][_tokenId].price = _price;
     }
 
     /**
@@ -128,13 +127,10 @@ contract RaulixShop is OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardU
      * @param _tokenId NFT token id
      * @dev The NFT is transferred back to the owner
      */
-    function cancelSell(address _nft, uint256 _tokenId) external onlyAllowedNFTs(_nft) onlyListed(_nft, _tokenId) onlyOwnerOfListing(_nft, _tokenId)
-    whenNotPaused nonReentrant {
-        delete offers[offersIndexes[_nft][_tokenId]];
-        delete offersIndexes[_nft][_tokenId];
+    function cancelSell(address _nft, uint256 _tokenId) external onlyListed(_nft, _tokenId) onlyOwnerOfNFT(_nft, _tokenId)
+    whenNotPaused {
+        delete offers[_nft][_tokenId];
         listed[_nft][_tokenId] = false;
-
-        IERC721(_nft).transferFrom(address(this), msg.sender, _tokenId);
     }
 
     /**
@@ -143,18 +139,19 @@ contract RaulixShop is OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardU
      * @param _tokenId NFT token id
      * @dev The NFT is transferred to the buyer and the seller receives the price minus the royalties
      */
-    function buy(address _nft, uint256 _tokenId) external payable onlyAllowedNFTs(_nft) onlyListed(_nft, _tokenId) whenNotPaused nonReentrant {
-        Offer memory offer = offers[offersIndexes[_nft][_tokenId]];
-        require(msg.value == offer.price, "Raulix: not enough funds");
+    function buy(address _nft, uint256 _tokenId) external payable onlyAllowedNFTs(_nft) onlyListed(_nft, _tokenId) whenNotPaused {
+        Offer memory offer = offers[_nft][_tokenId];
+        if(msg.value < offer.price) {
+            revert InsufficientBalance();
+        }
 
         uint256 royalties = royaltiesCalculator(offer.price);
         uint256 ownerAmount = offer.price - royalties;
 
-        delete offers[offersIndexes[_nft][_tokenId]];
-        delete offersIndexes[_nft][_tokenId];
+        delete offers[_nft][_tokenId];
         listed[_nft][_tokenId] = false;
 
-        IERC721(_nft).transferFrom(address(this), msg.sender, _tokenId);
+        IERC721(_nft).transferFrom(offer.owner, msg.sender, _tokenId);
         offer.owner.transfer(ownerAmount);
         royaltiesAddress.transfer(royalties);
     }
@@ -242,5 +239,4 @@ contract RaulixShop is OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardU
 
         IERC20(_token).transferFrom(address(this), address(msg.sender), balance);
     }
-
 }

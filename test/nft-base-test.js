@@ -3,7 +3,7 @@ const { ethers, upgrades } = require("hardhat");
 
 describe("Mint basis", function () {
   it("Should allow to mint how many we want", async function () {
-    const NFTFactory = await ethers.getContractFactory("RaulixNFTs");
+    const NFTFactory = await ethers.getContractFactory("NFTs");
     const nft = await NFTFactory.deploy();
     await nft.deployed();
 
